@@ -324,7 +324,7 @@ class Translator(object):
             batch_index = (
                     topk_beam_index
                     + beam_offset[:topk_beam_index.size(0)].unsqueeze(1))
-            select_indices = batch_index.view(-1)
+            select_indices = batch_index.view(-1).long # TODO: torch 1.8.1
 
             # Append last prediction.
             alive_seq = torch.cat(
@@ -357,7 +357,7 @@ class Translator(object):
 
                         results["scores"][b].append(score)
                         results["predictions"][b].append(pred)
-                non_finished = end_condition.eq(0).nonzero().view(-1)
+                non_finished = end_condition.eq(0).nonzero().view(-1).long() # TODO: torch 1.8.1
                 # If all sentences are translated, no need to go further.
                 if len(non_finished) == 0:
                     break
@@ -368,7 +368,7 @@ class Translator(object):
                 alive_seq = predictions.index_select(0, non_finished) \
                     .view(-1, alive_seq.size(-1))
             # Reorder states.
-            select_indices = batch_index.view(-1)
+            select_indices = batch_index.view(-1).long() # TODO: torch 1.8.1
             src_features = src_features.index_select(0, select_indices)
             dec_states.map_batch_fn(
                 lambda state, dim: state.index_select(dim, select_indices))
